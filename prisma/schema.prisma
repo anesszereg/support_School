@@ -1,0 +1,347 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum LiveStatus {
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id                 String                  @id @default(cuid())
+  username           String                  @unique
+  passwordHash       String
+  firstName          String
+  lastName           String
+  email              String?
+  phone              String?
+  role               Role                    @default(STUDENT)
+  status             AccountStatus           @default(ACTIVE)
+  mustChangePassword Boolean                 @default(true)
+  sessionVersion     Int                     @default(0)
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  profile            StudentProfile?
+  preferences        UserPreference?
+  attempts           ExamAttempt[]
+  attendance         Attendance[]
+  progress           LessonProgress[]
+  notifications      NotificationRecipient[]
+  auditLogs          AuditLog[]
+
+  @@index([role, status])
+}
+
+model StudentProfile {
+  id           String     @id @default(cuid())
+  userId       String     @unique
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialityId String
+  speciality   Speciality @relation(fields: [specialityId], references: [id])
+  notes        String     @default("")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([specialityId])
+}
+
+model Speciality {
+  id         String                  @id
+  name       String
+  nameFr     String
+  students   StudentProfile[]
+  chapters   ChapterSpeciality[]
+  lessons    LessonSpeciality[]
+  sessions   LiveSessionSpeciality[]
+  resources  ResourceSpeciality[]
+  curriculum CurriculumItem[]
+}
+
+model Chapter {
+  id           String              @id @default(cuid())
+  title        String
+  description  String              @default("")
+  position     Int                 @default(0)
+  published    Boolean             @default(false)
+  specialities ChapterSpeciality[]
+  lessons      Lesson[]
+  curriculum   CurriculumItem[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+}
+
+model ChapterSpeciality {
+  chapterId    String
+  specialityId String
+  chapter      Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  speciality   Speciality @relation(fields: [specialityId], references: [id])
+
+  @@id([chapterId, specialityId])
+  @@index([specialityId])
+}
+
+model Lesson {
+  id           String             @id @default(cuid())
+  title        String
+  description  String             @default("")
+  chapterId    String
+  chapter      Chapter            @relation(fields: [chapterId], references: [id])
+  position     Int                @default(0)
+  published    Boolean            @default(false)
+  duration     Int                @default(0)
+  videoId      String?            @unique
+  video        Video?             @relation(fields: [videoId], references: [id])
+  specialities LessonSpeciality[]
+  resources    Resource[]
+  progress     LessonProgress[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([chapterId, position])
+}
+
+model LessonSpeciality {
+  lessonId     String
+  specialityId String
+  lesson       Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  speciality   Speciality @relation(fields: [specialityId], references: [id])
+
+  @@id([lessonId, specialityId])
+  @@index([specialityId])
+}
+
+model CurriculumItem {
+  id           String     @id @default(cuid())
+  specialityId String
+  chapterId    String
+  position     Int        @default(0)
+  speciality   Speciality @relation(fields: [specialityId], references: [id])
+  chapter      Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([specialityId, chapterId])
+}
+
+model Video {
+  id        String   @id @default(cuid())
+  streamId  String   @unique
+  title     String
+  status    String   @default("processing")
+  lesson    Lesson?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LiveSession {
+  id           String                  @id @default(cuid())
+  title        String
+  description  String                  @default("")
+  startsAt     DateTime
+  duration     Int                     @default(60)
+  status       LiveStatus              @default(SCHEDULED)
+  meetingId    String?                 @unique
+  passcode     String?
+  recording    Boolean                 @default(false)
+  specialities LiveSessionSpeciality[]
+  attendance   Attendance[]
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+
+  @@index([startsAt, status])
+}
+
+model LiveSessionSpeciality {
+  liveSessionId String
+  specialityId  String
+  liveSession   LiveSession @relation(fields: [liveSessionId], references: [id], onDelete: Cascade)
+  speciality    Speciality  @relation(fields: [specialityId], references: [id])
+
+  @@id([liveSessionId, specialityId])
+  @@index([specialityId])
+}
+
+model Resource {
+  id           String               @id @default(cuid())
+  title        String
+  kind         String               @default("PDF")
+  objectKey    String               @unique
+  lessonId     String?
+  lesson       Lesson?              @relation(fields: [lessonId], references: [id])
+  published    Boolean              @default(false)
+  specialities ResourceSpeciality[]
+  exercises    Exercise[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+}
+
+model ResourceSpeciality {
+  resourceId   String
+  specialityId String
+  resource     Resource   @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  speciality   Speciality @relation(fields: [specialityId], references: [id])
+
+  @@id([resourceId, specialityId])
+  @@index([specialityId])
+}
+
+model Exercise {
+  id            String    @id @default(cuid())
+  title         String
+  statement     String
+  solution      String    @default("")
+  specialityIds String[]
+  published     Boolean   @default(false)
+  resourceId    String?
+  resource      Resource? @relation(fields: [resourceId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Exam {
+  id            String        @id @default(cuid())
+  title         String
+  kind          String        @default("PRACTICE")
+  duration      Int           @default(60)
+  specialityIds String[]
+  published     Boolean       @default(false)
+  questions     Question[]
+  attempts      ExamAttempt[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Question {
+  id           String   @id @default(cuid())
+  examId       String
+  exam         Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  text         String
+  options      String[]
+  correctIndex Int
+  points       Int      @default(1)
+  position     Int      @default(0)
+
+  @@index([examId])
+}
+
+model ExamAttempt {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  examId      String
+  exam        Exam      @relation(fields: [examId], references: [id])
+  answers     Json      @default("{}")
+  score       Float?
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+
+  @@index([userId, examId])
+}
+
+model Attendance {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  liveSessionId String
+  liveSession   LiveSession @relation(fields: [liveSessionId], references: [id])
+  joinedAt      DateTime    @default(now())
+  leftAt        DateTime?
+
+  @@unique([userId, liveSessionId])
+}
+
+model LessonProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  seconds   Int      @default(0)
+  completed Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+}
+
+model Notification {
+  id         String                  @id @default(cuid())
+  title      String
+  body       String
+  href       String                  @default("/dashboard")
+  recipients NotificationRecipient[]
+  createdAt  DateTime                @default(now())
+}
+
+model NotificationRecipient {
+  notificationId String
+  userId         String
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt         DateTime?
+
+  @@id([notificationId, userId])
+  @@index([userId, readAt])
+}
+
+model UserPreference {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme     String   @default("light")
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  action    String
+  targetId  String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model PlatformSettings {
+  id           String    @id @default("platform")
+  teacherName  String    @default("الأستاذ عصام بن بليل")
+  brandName    String    @default("عصام ماث")
+  accentColor  String    @default("#128c73")
+  defaultTheme String    @default("light")
+  academicYear String    @default("2027")
+  contactPhone String    @default("")
+  contactEmail String    @default("")
+  examDate     DateTime?
+  updatedAt    DateTime  @updatedAt
+}
+
+model RateLimit {
+  key      String   @id
+  count    Int      @default(1)
+  resetsAt DateTime
+}
+
+model WebhookEvent {
+  id        String   @id
+  payload   Json
+  status    String   @default("pending")
+  attempts  Int      @default(0)
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

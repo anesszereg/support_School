@@ -1,0 +1,61 @@
+{
+  "name": "issam-bac-2027",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "test:browser": "tsx tests/browser-smoke.ts",
+    "format:check": "prettier --check src tests scripts prisma/seed.ts package.json tsconfig.json next.config.ts postcss.config.mjs",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "admin:setup": "tsx scripts/setup-admin.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1171.0",
+    "@aws-sdk/s3-request-presigner": "3.1171.0",
+    "@cloudflare/stream-react": "1.9.3",
+    "@hookform/resolvers": "7.0.7",
+    "@next/env": "16.4.6",
+    "@prisma/client": "6.12.0",
+    "@radix-ui/react-slot": "1.2.3",
+    "@zoom/meetingsdk": "4.0.5",
+    "bcryptjs": "3.0.2",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "framer-motion": "14.14.0",
+    "jose": "6.1.0",
+    "katex": "0.19.1",
+    "lucide-react": "0.468.0",
+    "next": "16.4.6",
+    "next-auth": "5.0.0-beta.32",
+    "papaparse": "5.5.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-hook-form": "7.66.0",
+    "recharts": "3.3.0",
+    "tailwind-merge": "3.3.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.1.17",
+    "@types/katex": "0.16.7",
+    "@types/node": "22.19.0",
+    "@types/papaparse": "5.3.16",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "playwright-core": "1.56.1",
+    "prettier": "3.6.2",
+    "prisma": "6.12.0",
+    "tailwindcss": "4.1.17",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

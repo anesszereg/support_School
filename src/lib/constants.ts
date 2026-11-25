@@ -1,0 +1,60 @@
+export const specialities = [
+  {
+    id: "science",
+    name: "علوم تجريبية",
+    nameFr: "Sciences expérimentales",
+    symbol: "∫",
+  },
+  { id: "math", name: "رياضيات", nameFr: "Mathématiques", symbol: "∑" },
+  {
+    id: "technical",
+    name: "تقني رياضي",
+    nameFr: "Technique mathématique",
+    symbol: "⌘",
+  },
+  {
+    id: "economy",
+    name: "تسيير واقتصاد",
+    nameFr: "Gestion et économie",
+    symbol: "↗",
+  },
+  {
+    id: "literature",
+    name: "آداب وفلسفة",
+    nameFr: "Lettres et philosophie",
+    symbol: "φ",
+  },
+  {
+    id: "languages",
+    name: "لغات أجنبية",
+    nameFr: "Langues étrangères",
+    symbol: "文",
+  },
+];
+export const studentNav = [
+  ["", "الرئيسية", "home"],
+  ["live", "الحصص المباشرة", "video"],
+  ["lessons", "الدروس المسجلة", "play"],
+  ["curriculum", "البرنامج الدراسي", "book"],
+  ["exercises", "التمارين", "pen"],
+  ["exams", "الاختبارات", "check"],
+  ["bac", "مواضيع البكالوريا", "award"],
+  ["resources", "الملفات", "folder"],
+  ["schedule", "جدول الحصص", "calendar"],
+  ["notifications", "الإشعارات", "bell"],
+  ["settings", "الإعدادات", "settings"],
+];
+export const adminNav = [
+  ["", "نظرة عامة", "home"],
+  ["students", "إدارة التلاميذ", "users"],
+  ["specialities", "الشعب الدراسية", "book"],
+  ["chapters", "الفصول الدراسية", "folder"],
+  ["lessons", "الدروس المسجلة", "play"],
+  ["live", "الحصص المباشرة", "video"],
+  ["videos", "مكتبة الفيديو", "play"],
+  ["resources", "الملفات التعليمية", "folder"],
+  ["exercises", "التمارين", "pen"],
+  ["exams", "الاختبارات", "check"],
+  ["notifications", "الإشعارات", "bell"],
+  ["settings", "إعدادات المنصة", "settings"],
+];
